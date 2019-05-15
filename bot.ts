@@ -13,12 +13,16 @@ if (!token) throw Error("no token")
 
 let output: DigitalOutput
 
+function log(...args: any[]) {
+	console.log(new Date(), ...args)
+}
+
 async function _openDoor() {
-	console.log(new Date(), "OPEN")
+	log("OPEN")
 	if (debug) "(debug mode, noop)"
 	if (!debug) output.write(0)
 	await sleep(1500)
-	console.log(new Date(), "DONE")
+	log("DONE")
 	if (!debug) output.write(1)
 }
 
@@ -47,7 +51,11 @@ function sleep(time: number) {
 }
 
 async function open(ctx: ContextMessageUpdate) {
-	console.log(ctx.from!.id, ctx.from!.first_name, ctx.from!.last_name)
+	if (!ctx.from) {
+		log("what?")
+		return
+	}
+	log("openDoor", ctx.from.id, ctx.from.first_name, ctx.from.last_name)
 	await openDoor()
 	ctx.replyWithMarkdown("Opening door for 1.5 seconds...")
 }
@@ -56,7 +64,7 @@ init(async () => {
 	output = new DigitalOutput({ pullResistor: PULL_UP, pin: "GPIO3" })
 	// await sleep(500)
 	output.write(1)
-	console.log("listening")
+	log("listening")
 	/*bot.command("open", async ctx => {
     
 	});*/
@@ -65,7 +73,7 @@ init(async () => {
 		if (next && ctx.from && admins.includes(String(ctx.from.id)))
 			(next as any)(ctx)
 		else {
-			console.log(
+			log(
 				"msg from unknown user",
 				ctx.message && ctx.message.text,
 				ctx.from,
