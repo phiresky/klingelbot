@@ -52,7 +52,8 @@ async function open(ctx: ContextMessageUpdate) {
 
 init(async () => {
 	output = new DigitalOutput({ pullResistor: PULL_UP, pin: "GPIO3" })
-	//output.write(1)
+	// await sleep(500)
+	output.write(1)
 	console.log("listening")
 	/*bot.command("open", async ctx => {
     
