@@ -25,7 +25,7 @@ function log(...args: any[]) {
 
 async function _openDoor() {
 	log("OPEN")
-	if (debug) "(debug mode, noop)"
+	if (debug) log("(debug mode, noop)")
 	if (!debug) output.write(0)
 	await sleep(1500)
 	log("DONE")
