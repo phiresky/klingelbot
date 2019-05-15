@@ -1,5 +1,5 @@
 import { init } from "raspi"
-import { DigitalInput, DigitalOutput } from "raspi-gpio"
+import { DigitalOutput } from "raspi-gpio"
 import Telegraf, { ContextMessageUpdate } from "telegraf"
 import _TelegrafInlineMenu = require("telegraf-inline-menu")
 
@@ -20,7 +20,19 @@ async function _openDoor() {
 	if (!debug) output.write(1)
 }
 
-console.log(token)
+let previous = Promise.resolve()
+async function openDoor() {
+	let previousprevious = previous
+	while (true) {
+		await previous
+		if (previousprevious === previous) break
+		previousprevious = previous
+	}
+
+	previous = _openDoor()
+	return previous
+}
+
 const bot = new Telegraf(token)
 const menu = new TelegrafInlineMenu(ctx => `Hey ${ctx.from!.first_name}!`)
 menu.setCommand("start")
@@ -33,8 +45,8 @@ function sleep(time: number) {
 }
 
 async function open(ctx: ContextMessageUpdate) {
-	console.log("starting")
-	await _openDoor()
+	// console.log("starting")
+	await openDoor()
 	ctx.replyWithMarkdown("Opening door for 1.5 seconds...")
 }
 

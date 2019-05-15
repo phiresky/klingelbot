@@ -1,6 +1,6 @@
 {
 	"scripts": {
-		"bot": "ts-node bot.ts"
+		"bot": "ts-node --transpile-only bot.ts"
 	},
 	"dependencies": {
 		"eslint": "^5.15.0",
