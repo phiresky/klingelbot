@@ -1,17 +1,23 @@
+import * as fs from "fs"
 import { init } from "raspi"
 import { DigitalOutput, PULL_UP } from "raspi-gpio"
 import Telegraf, { ContextMessageUpdate } from "telegraf"
 import _TelegrafInlineMenu = require("telegraf-inline-menu")
-
 const TelegrafInlineMenu = (_TelegrafInlineMenu as any) as typeof _TelegrafInlineMenu.default
-const debug = false
+const debug = true
 
 const token = process.env.BOT_TOKEN
 const admins = (process.env.ADMINS || "").split(",")
+
+const ringringFifo = process.env.RINGRING_FIFO
+
 if (admins.length === 0) console.warn("no admins set")
 if (!token) throw Error("no token")
+if (!ringringFifo) console.warn("no ringring detection")
 
 let output: DigitalOutput
+
+const adminChats = new Set<string>()
 
 function log(...args: any[]) {
 	console.log(new Date(), ...args)
@@ -70,13 +76,15 @@ init(async () => {
 	});*/
 
 	bot.on("message", (ctx, next) => {
-		if (next && ctx.from && admins.includes(String(ctx.from.id)))
-			(next as any)(ctx)
-		else {
+		if (next && ctx.from && admins.includes(String(ctx.from.id))) {
+			if (ctx.chat) adminChats.add(String(ctx.chat.id))
+			;(next as any)(ctx)
+		} else {
 			log(
 				"msg from unknown user",
 				ctx.message && ctx.message.text,
 				ctx.from,
+				ctx.chat && ctx.chat!.id,
 			)
 		}
 	})
@@ -86,5 +94,18 @@ init(async () => {
 	/*while (true) {
     output.write(1);
     await sleep(10000);
-  }*/
+	}*/
+
+	if (ringringFifo) {
+		const fifo = fs.createReadStream(ringringFifo, {
+			encoding: "utf8",
+			autoClose: false,
+		})
+		fifo.on("data", data => {
+			log("got doorbell ring")
+			for (const chat of adminChats) {
+				bot.telegram.sendMessage(chat, "The doorbell just rang!")
+			}
+		})
+	}
 })
