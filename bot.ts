@@ -7,6 +7,8 @@ const TelegrafInlineMenu = (_TelegrafInlineMenu as any) as typeof _TelegrafInlin
 const debug = false
 
 const token = process.env.BOT_TOKEN
+const admins = (process.env.ADMINS || "").split(",")
+if (admins.length === 0) console.warn("no admins set")
 if (!token) throw Error("no token")
 
 let output: DigitalOutput
@@ -45,7 +47,7 @@ function sleep(time: number) {
 }
 
 async function open(ctx: ContextMessageUpdate) {
-	// console.log("starting")
+	console.log(ctx.from!.id, ctx.from!.first_name, ctx.from!.last_name)
 	await openDoor()
 	ctx.replyWithMarkdown("Opening door for 1.5 seconds...")
 }
@@ -57,7 +59,19 @@ init(async () => {
 	console.log("listening")
 	/*bot.command("open", async ctx => {
     
-  });*/
+	});*/
+
+	bot.on("message", (ctx, next) => {
+		if (next && ctx.from && admins.includes(String(ctx.from.id)))
+			(next as any)(ctx)
+		else {
+			console.log(
+				"msg from unknown user",
+				ctx.message && ctx.message.text,
+				ctx.from,
+			)
+		}
+	})
 	bot.use(menu.init())
 	bot.launch()
 
