@@ -75,13 +75,17 @@ init(async () => {
     
 	});*/
 
-	bot.on("message", (ctx, next) => {
+	bot.use((ctx, next) => {
 		if (next && ctx.from && admins.includes(String(ctx.from.id))) {
-			if (ctx.chat) adminChats.add(String(ctx.chat.id))
+			if (ctx.chat) {
+				log("chat id", ctx.from.id, "=", ctx.chat.id)
+				adminChats.add(String(ctx.chat.id))
+			}
 			;(next as any)(ctx)
 		} else {
 			log(
 				"msg from unknown user",
+				ctx.updateType,
 				ctx.message && ctx.message.text,
 				ctx.from,
 				ctx.chat && ctx.chat!.id,
