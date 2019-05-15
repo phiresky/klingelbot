@@ -1,10 +1,10 @@
 import { init } from "raspi"
-import { DigitalOutput } from "raspi-gpio"
+import { DigitalOutput, PULL_UP } from "raspi-gpio"
 import Telegraf, { ContextMessageUpdate } from "telegraf"
 import _TelegrafInlineMenu = require("telegraf-inline-menu")
 
 const TelegrafInlineMenu = (_TelegrafInlineMenu as any) as typeof _TelegrafInlineMenu.default
-const debug = true
+const debug = false
 
 const token = process.env.BOT_TOKEN
 if (!token) throw Error("no token")
@@ -51,7 +51,8 @@ async function open(ctx: ContextMessageUpdate) {
 }
 
 init(async () => {
-	output = new DigitalOutput("GPIO21")
+	output = new DigitalOutput({ pullResistor: PULL_UP, pin: "GPIO3" })
+	//output.write(1)
 	console.log("listening")
 	/*bot.command("open", async ctx => {
     
