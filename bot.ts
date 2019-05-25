@@ -4,7 +4,7 @@ import { DigitalOutput, PULL_UP } from "raspi-gpio"
 import Telegraf, { ContextMessageUpdate } from "telegraf"
 import _TelegrafInlineMenu = require("telegraf-inline-menu")
 const TelegrafInlineMenu = (_TelegrafInlineMenu as any) as typeof _TelegrafInlineMenu.default
-const debug = true
+const debug = false
 
 const token = process.env.BOT_TOKEN
 const admins = (process.env.ADMINS || "").split(",")
@@ -17,7 +17,7 @@ if (!ringringFifo) console.warn("no ringring detection")
 
 let output: DigitalOutput
 
-const adminChats = new Set<string>()
+// const adminChats = new Set<string>()
 
 function log(...args: any[]) {
 	console.log(new Date(), ...args)
@@ -76,10 +76,16 @@ init(async () => {
 	});*/
 
 	bot.use((ctx, next) => {
-		if (next && ctx.from && admins.includes(String(ctx.from.id))) {
+		if (
+			next &&
+			ctx.from &&
+			ctx.chat &&
+			(admins.includes(String(ctx.from.id)) ||
+				admins.includes(String(ctx.chat.id)))
+		) {
 			if (ctx.chat) {
 				log("chat id", ctx.from.id, "=", ctx.chat.id)
-				adminChats.add(String(ctx.chat.id))
+				// adminChats.add(String(ctx.chat.id))
 			}
 			;(next as any)(ctx)
 		} else {
@@ -107,7 +113,7 @@ init(async () => {
 		})
 		fifo.on("data", data => {
 			log("got doorbell ring")
-			for (const chat of adminChats) {
+			for (const chat of admins) {
 				bot.telegram.sendMessage(chat, "The doorbell just rang!")
 			}
 		})
